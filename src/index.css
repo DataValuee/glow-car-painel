@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* Glow Car Detailing Design System
+   Primary: Gold (#C9A86C) 
+   Background: Black (#0A0A0A)
+   Text: White (#FFFFFF)
+   Style: Premium, elegant, minimalista
+*/
+
+@theme {
+  --color-border: hsl(0 0% 20%);
+  --color-input: hsl(0 0% 15%);
+  --color-ring: hsl(39 45% 60%);
+  --color-background: hsl(0 0% 4%);
+  --color-foreground: hsl(0 0% 100%);
+  
+  --color-primary: hsl(39 45% 60%);
+  --color-primary-foreground: hsl(0 0% 4%);
+  
+  --color-secondary: hsl(0 0% 12%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+  
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  
+  --color-muted: hsl(0 0% 15%);
+  --color-muted-foreground: hsl(0 0% 65%);
+  
+  --color-accent: hsl(39 45% 50%);
+  --color-accent-foreground: hsl(0 0% 4%);
+  
+  --color-popover: hsl(0 0% 6%);
+  --color-popover-foreground: hsl(0 0% 100%);
+  
+  --color-card: hsl(0 0% 6%);
+  --color-card-foreground: hsl(0 0% 100%);
+  
+  --color-whatsapp: hsl(142 70% 45%);
+  --color-whatsapp-foreground: hsl(0 0% 100%);
+  
+  --color-success: hsl(142 76% 36%);
+  --color-success-foreground: hsl(0 0% 100%);
+  
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+}
+
+:root {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 6%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 6%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 39 45% 60%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 39 45% 50%;
+  --accent-foreground: 0 0% 4%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 20%;
+  --input: 0 0% 15%;
+  --ring: 39 45% 60%;
+  --radius: 0.75rem;
+  --whatsapp: 142 70% 45%;
+  --whatsapp-foreground: 0 0% 100%;
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+}
+
+.dark {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 6%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 6%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 39 45% 60%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 39 45% 50%;
+  --accent-foreground: 0 0% 4%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 20%;
+  --input: 0 0% 15%;
+  --ring: 39 45% 60%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.btn-gold {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  transition: all 0.3s;
+  font-weight: 600;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-gold:hover {
+  background-color: hsl(var(--primary) / 0.9);
+  box-shadow: 0 10px 15px -3px hsl(var(--primary) / 0.25);
+}
+
+.btn-gold:active {
+  transform: scale(0.98);
+}
+
+.btn-whatsapp {
+  background-color: hsl(var(--whatsapp));
+  color: white;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.btn-whatsapp:hover {
+  background-color: hsl(var(--whatsapp) / 0.9);
+}
+
+.card-premium {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.input-premium {
+  background-color: hsl(var(--input));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+  transition: all 0.2s;
+}
+
+.input-premium::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.input-premium:focus {
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+  border-color: hsl(var(--primary));
+}
+
+.gold-glow {
+  box-shadow: 0 0 30px hsl(39 45% 60% / 0.3);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

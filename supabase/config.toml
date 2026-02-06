@@ -1,0 +1,8 @@
+<<<<<<< HEAD
+project_id = "lvzrqtfzawydwvufdcbz"
+
+[functions.send-email]
+verify_jwt = false
+=======
+project_id = "lvzrqtfzawydwvufdcbz"
+>>>>>>> 92cb02e8795928068a3110524f5c6168a5d1211d
