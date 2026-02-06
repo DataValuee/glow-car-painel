@@ -1,0 +1,76 @@
+﻿git : remote: 
+warning: See 
+https://gh.io/lfs 
+for more 
+information.       
+ 
+No linha:1 
+caractere:1
++ git push origin 
+main 2>&1 | 
+Out-File -Encoding 
+UTF8 push_error.txt
++ ~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo 
+             : No  
+  tSpecified: (r   
+ emote: warning    
+...mation.         
+   :String) [    
+], RemoteExcep    
+tion
+    + FullyQualifi 
+   edErrorId : Na  
+  tiveCommandErr   
+ or
+ 
+remote: warning: 
+File 
+GLOWCARPAINEL.zip 
+is 73.64 MB; this 
+is larger than 
+GitHub's 
+recommended 
+maximum file size 
+of 50.00 MB        
+remote: warning: 
+GH001: Large files 
+detected. You may 
+want to try Git 
+Large File Storage 
+- https://git-lfs.g
+ithub.com.        
+remote: error: 
+GH013: Repository 
+rule violations 
+found for 
+refs/heads/main.   
+     
+remote: Review all 
+repository rules 
+at https://github.c
+om/DataValuee/glow-
+car-painel/rules?re
+f=refs%2Fheads%2Fma
+in        
+remote: 
+remote: - Changes 
+must be made 
+through a pull 
+request.        
+remote: 
+To https://github.c
+om/DataValuee/glow-
+car-painel
+ ! [remote 
+rejected] main -> 
+main (push 
+declined due to 
+repository rule 
+violations)
+error: failed to 
+push some refs to '
+https://github.com/
+DataValuee/glow-car
+-painel'

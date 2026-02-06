@@ -20,12 +20,26 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting login with email:", email);
+      if (!supabase) {
+        console.error("Supabase client is not initialized");
+        toast({
+          variant: "destructive",
+          title: "Erro de Configuração",
+          description: "Cliente Supabase não inicializado",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log("Login attempt result:", { data, error });
+
       if (error) {
+        console.error("Login detailed error:", error);
         if (error.message.includes("Invalid login credentials")) {
           toast({
             variant: "destructive",
@@ -40,6 +54,7 @@ const Login = () => {
           });
         }
       } else {
+        console.log("Login successful, navigating to /painel");
         navigate("/painel");
       }
     } catch (error) {
