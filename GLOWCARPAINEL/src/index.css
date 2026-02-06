@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Glow Car Detailing Design System
+   Primary: Gold (#C9A86C) 
+   Background: Black (#0A0A0A)
+   Text: White (#FFFFFF)
+   Style: Premium, elegant, minimalista
+*/
+
+@layer base {
+  :root {
+    /* Light mode - same as dark for this premium brand */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Gold primary color: #C9A86C -> HSL(39, 45%, 60%) */
+    --primary: 39 45% 60%;
+    --primary-foreground: 0 0% 4%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 39 45% 50%;
+    --accent-foreground: 0 0% 4%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 39 45% 60%;
+
+    --radius: 0.75rem;
+
+    /* WhatsApp green */
+    --whatsapp: 142 70% 45%;
+    --whatsapp-foreground: 0 0% 100%;
+
+    /* Success */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 39 45% 60%;
+    --primary-foreground: 0 0% 4%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 39 45% 50%;
+    --accent-foreground: 0 0% 4%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 39 45% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-gold {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 
+           transition-all duration-300 font-semibold shadow-lg 
+           hover:shadow-primary/25 active:scale-[0.98];
+  }
+
+  .btn-whatsapp {
+    @apply bg-[hsl(var(--whatsapp))] text-white hover:bg-[hsl(var(--whatsapp))]/90
+           transition-all duration-300 font-semibold;
+  }
+
+  .card-premium {
+    @apply bg-card border border-border/50 rounded-xl 
+           shadow-lg backdrop-blur-sm;
+  }
+
+  .input-premium {
+    @apply bg-input border-border text-foreground 
+           placeholder:text-muted-foreground focus:ring-2 
+           focus:ring-primary/50 focus:border-primary
+           transition-all duration-200;
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 30px hsl(39 45% 60% / 0.3);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
