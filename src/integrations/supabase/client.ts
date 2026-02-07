@@ -10,8 +10,6 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY |
 
 let supabaseClient: SupabaseClient<Database> | null = null;
 
-console.log("Supabase Client Init - URL present:", !!SUPABASE_URL);
-console.log("Supabase Client Init - Key present:", !!SUPABASE_PUBLISHABLE_KEY);
 
 if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
   supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -21,7 +19,6 @@ if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
       autoRefreshToken: true,
     }
   });
-  console.log("Supabase Client initialized successfully");
 } else {
   console.warn('Supabase credentials not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables.');
 }
