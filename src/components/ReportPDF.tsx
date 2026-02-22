@@ -51,8 +51,9 @@ const styles = StyleSheet.create({
     },
     infoBlock: {
         marginBottom: 20,
-        borderBottom: 1,
+        borderBottomWidth: 1,
         borderBottomColor: "#E0E0E0",
+        borderBottomStyle: "solid",
         paddingBottom: 10,
     },
     infoRow: {
@@ -74,8 +75,9 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginBottom: 10,
         color: "#0A0A0A",
-        borderLeft: 4,
+        borderLeftWidth: 4,
         borderLeftColor: "#C9A86C",
+        borderLeftStyle: "solid",
         paddingLeft: 8,
     },
     grid: {
@@ -86,7 +88,8 @@ const styles = StyleSheet.create({
     imageContainer: {
         width: "48%",
         marginBottom: 10,
-        border: 1,
+        borderWidth: 1,
+        borderStyle: "solid",
         borderColor: "#EEEEEE",
         borderRadius: 4,
         overflow: "hidden",
