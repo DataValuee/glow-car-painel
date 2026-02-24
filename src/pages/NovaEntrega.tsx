@@ -60,6 +60,7 @@ const NovaEntrega = () => {
     servico: string;
     dataEntrega: string;
   } | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -72,9 +73,13 @@ const NovaEntrega = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        navigate("/login", { replace: true });
+      }
+    } finally {
+      setIsCheckingAuth(false);
     }
   };
 
@@ -309,9 +314,17 @@ const NovaEntrega = () => {
     }
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (resultado) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-md space-y-6 animate-fade-in text-center">
           <div className="w-20 h-20 mx-auto bg-success/20 rounded-full flex items-center justify-center">
             <svg
@@ -399,7 +412,7 @@ const NovaEntrega = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-[100dvh] bg-background pb-8">
       {/* Header */}
       <header className="border-b border-border bg-card/80 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">

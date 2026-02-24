@@ -36,6 +36,7 @@ const Painel = () => {
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -45,12 +46,18 @@ const Painel = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error || !session) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      setUserName(session.user.email?.split("@")[0] || "Funcionário");
+    } finally {
+      setIsCheckingAuth(false);
     }
-    setUserName(session.user.email?.split("@")[0] || "Funcionário");
   };
 
   const fetchEntregas = async () => {
@@ -163,8 +170,16 @@ const Painel = () => {
     }
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card/80 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
