@@ -20,6 +20,15 @@ const Login = () => {
     setLoading(true);
 
     try {
+      if (!supabase) {
+        toast({
+          variant: "destructive",
+          title: "Erro de Configuração",
+          description: "Cliente Supabase não inicializado",
+        });
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -40,6 +49,21 @@ const Login = () => {
           });
         }
       } else {
+        // Fix iOS/Safari race condition: Wait for session to be fully persisted
+        // before navigating, as the storage adapter might be slightly delayed.
+        let sessionCheckRetries = 0;
+        let sessionPersisted = false;
+
+        while (sessionCheckRetries < 5 && !sessionPersisted) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            sessionPersisted = true;
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 100)); // wait 100ms
+            sessionCheckRetries++;
+          }
+        }
+
         navigate("/painel");
       }
     } catch (error) {
@@ -54,7 +78,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         {/* Logo */}
         <div className="flex flex-col items-center space-y-4">

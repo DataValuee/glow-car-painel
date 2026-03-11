@@ -23,6 +23,10 @@ import {
 } from "lucide-react";
 import logoGlowCar from "@/assets/logo-glow-car.jpeg";
 import { enviarEmailComPDF } from "@/services/emailService";
+import { processImageForPDF } from "@/utils/imageOptimization";
+import { pdf } from "@react-pdf/renderer";
+import { ReportPDF } from "@/components/ReportPDF";
+import { Progress } from "@/components/ui/progress";
 
 const SERVICOS = [
   "Estética Completa",
@@ -45,6 +49,8 @@ const NovaEntrega = () => {
   const [fotos, setFotos] = useState<File[]>([]);
   const [fotoPreviews, setFotoPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [activeStep, setActiveStep] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [resultado, setResultado] = useState<{
     pdfUrl: string;
@@ -54,6 +60,7 @@ const NovaEntrega = () => {
     servico: string;
     dataEntrega: string;
   } | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -66,9 +73,13 @@ const NovaEntrega = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        navigate("/login", { replace: true });
+      }
+    } finally {
+      setIsCheckingAuth(false);
     }
   };
 
@@ -117,183 +128,28 @@ const NovaEntrega = () => {
   };
 
   const gerarPDF = async (fotosUrls: string[]): Promise<Blob> => {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF();
+    setActiveStep("Finalizando PDF");
+    setProgress(90);
 
-    // Constants for A4 Page (210mm x 297mm)
-    const PAGE_WIDTH = 210;
-    const PAGE_HEIGHT = 297;
-    const MARGIN = 20;
-    const GAP = 10;
-    const IMG_WIDTH = (PAGE_WIDTH - (MARGIN * 2) - GAP) / 2; // (210 - 40 - 10) / 2 = 80
-    const IMG_HEIGHT = 60;
-    const HEADER_HEIGHT = 50;
-    const FOOTER_Y = 280;
-    const CONTENT_LIMIT = 260; // Max Y before page break (leaves room for footer space)
+    const logoBase64 = await processImageForPDF(logoGlowCar, 200, 0.9);
 
-    const pageWidth = doc.internal.pageSize.getWidth(); // Should be 210
+    const blob = await pdf(
+      <ReportPDF
+        data={{
+          placa: formData.placa,
+          clienteNome: formData.clienteNome,
+          servico: formData.servico === "Outro" ? formData.servicoOutro : formData.servico,
+          dataEntrega: `${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`,
+          fotos: fotosUrls,
+          logoUrl: logoBase64,
+        }}
+      />
+    ).toBlob();
 
-    // --- HEADER (First Page Only) ---
-    doc.setFillColor(10, 10, 10);
-    doc.rect(0, 0, pageWidth, HEADER_HEIGHT, "F");
-
-    // Logo
-    try {
-      const logoImg = await loadImageAsBase64(logoGlowCar);
-      doc.addImage(logoImg, "JPEG", pageWidth / 2 - 15, 5, 30, 30);
-    } catch (e) {
-      console.log("Logo não carregada");
-    }
-
-    // Título
-    doc.setTextColor(201, 168, 108);
-    doc.setFontSize(16);
-    doc.text("RELATÓRIO DE ENTREGA", pageWidth / 2, 42, { align: "center" });
-
-    // Data
-    doc.setTextColor(150, 150, 150);
-    doc.setFontSize(10);
-    doc.text(
-      `Emitido em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`,
-      pageWidth / 2,
-      48,
-      { align: "center" }
-    );
-
-    // --- CONTENT ---
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(12);
-    let y = 70; // Start below header
-
-    // Info Block
-    doc.setFont("helvetica", "bold");
-    doc.text("Placa:", MARGIN, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(formData.placa.toUpperCase(), MARGIN + 30, y);
-
-    y += 10;
-    doc.setFont("helvetica", "bold");
-    doc.text("Cliente:", MARGIN, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(formData.clienteNome, MARGIN + 30, y);
-
-    y += 10;
-    doc.setFont("helvetica", "bold");
-    doc.text("Serviço:", MARGIN, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(formData.servico === "Outro" ? formData.servicoOutro : formData.servico, MARGIN + 30, y);
-
-    // Photos Header
-    y += 20;
-    doc.setFont("helvetica", "bold");
-    doc.text("Fotos do Veículo:", MARGIN, y);
-    y += 10;
-
-    // Grid Loop
-    let x = MARGIN;
-
-    for (let i = 0; i < fotosUrls.length; i++) {
-      // Check for Page Break
-      if (y + IMG_HEIGHT > CONTENT_LIMIT) {
-        doc.addPage();
-        y = MARGIN; // Reset Y to top margin
-        x = MARGIN; // Reset X
-        // Note: We DO NOT draw the header background on sub-pages
-      }
-
-      try {
-        const imgData = await loadImageAsBase64(fotosUrls[i]);
-
-        // Draw Image
-        doc.addImage(imgData, "JPEG", x, y, IMG_WIDTH, IMG_HEIGHT);
-
-        // Draw Premium Border (Rounded Rect)
-        // Set draw color to light gray for subtle effect
-        doc.setDrawColor(220, 220, 220);
-        doc.setLineWidth(0.1);
-        doc.roundedRect(x, y, IMG_WIDTH, IMG_HEIGHT, 3, 3, "S"); // S = Stroke
-
-        // Update Position
-        if (x === MARGIN) {
-          // Move to second column
-          x = MARGIN + IMG_WIDTH + GAP;
-        } else {
-          // Move to next row
-          x = MARGIN;
-          y += IMG_HEIGHT + GAP;
-        }
-
-      } catch (e) {
-        console.log("Erro ao adicionar foto:", i);
-      }
-    }
-
-    // --- FOOTER (Last Page Only) ---
-    const pageCount = doc.getNumberOfPages();
-    doc.setPage(pageCount);
-
-    // Ensure footer doesn't overlap if content finished exactly at bottom
-    // We strictly use y=280 for footer background
-    doc.setFillColor(10, 10, 10);
-    doc.rect(0, FOOTER_Y, pageWidth, 20, "F");
-
-    doc.setTextColor(201, 168, 108);
-    doc.setFontSize(10);
-    doc.text("Glow Car Detailing", pageWidth / 2, FOOTER_Y + 8, { align: "center" });
-
-    doc.setTextColor(150, 150, 150);
-    doc.setFontSize(8);
-    doc.text("Seu veículo merece brilhar", pageWidth / 2, FOOTER_Y + 13, { align: "center" });
-
-    return doc.output("blob");
+    setProgress(100);
+    return blob;
   };
 
-  // Carrega e processa a imagem para caber perfeitamente no aspect ratio (Cover)
-  const loadImageAsBase64 = (src: string, targetWidth?: number, targetHeight?: number): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-
-        // Se dimensões alvo não forem passadas, usa originais
-        const tWidth = targetWidth || img.width;
-        const tHeight = targetHeight || img.height;
-
-        canvas.width = tWidth;
-        canvas.height = tHeight;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Canvas context not defined"));
-          return;
-        }
-
-        // Object-Cover Logic (Crop Center)
-        const sourceRatio = img.width / img.height;
-        const targetRatio = tWidth / tHeight;
-
-        let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
-
-        if (sourceRatio > targetRatio) {
-          // Imagem mais larga que o alvo: corta laterais
-          sWidth = img.height * targetRatio;
-          sx = (img.width - sWidth) / 2;
-        } else {
-          // Imagem mais alta que o alvo: corta topo/fundo
-          sHeight = img.width / targetRatio;
-          sy = (img.height - sHeight) / 2;
-        }
-
-        // Desenha imagem cortada no canvas
-        ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, tWidth, tHeight);
-
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
-      };
-      img.onerror = reject;
-      img.src = src;
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,40 +167,57 @@ const NovaEntrega = () => {
 
     try {
       // 1. Upload das fotos
+      setActiveStep("Enviando fotos...");
+      setProgress(10);
+
       const fotosUrls: string[] = [];
+      const optimizedFotosUrls: string[] = [];
       const timestamp = Date.now();
+
       for (let i = 0; i < fotos.length; i++) {
+        setActiveStep(`Processando foto ${i + 1} de ${fotos.length}`);
         const foto = fotos[i];
-        // Sanitizar nome do arquivo: remover espaços, acentos e caracteres especiais
+
+        // Create object URL for processing
+        const localUrl = URL.createObjectURL(foto);
+        const optimizedBase64 = await processImageForPDF(localUrl, 800, 0.75);
+        URL.revokeObjectURL(localUrl);
+
+        optimizedFotosUrls.push(optimizedBase64);
+
+        // Upload original/optimized to Supabase
         const sanitizedName = foto.name
           .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") // Remove acentos
-          .replace(/\s+/g, "_") // Substitui espaços por underscore
-          .replace(/[^a-zA-Z0-9._-]/g, "") // Remove caracteres especiais
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, "_")
+          .replace(/[^a-zA-Z0-9._-]/g, "")
           .toLowerCase();
 
         const fileName = `${timestamp}-${i}-${Math.random().toString(36).substring(7)}-${sanitizedName}`;
+
         const { error } = await supabase.storage
           .from("entregas-fotos")
           .upload(fileName, foto);
 
-        if (error) {
-          console.error(`Erro ao fazer upload da foto ${i}:`, error);
-          throw error;
-        }
+        if (error) throw error;
 
         const { data: urlData } = supabase.storage
           .from("entregas-fotos")
           .getPublicUrl(fileName);
 
         fotosUrls.push(urlData.publicUrl);
+        setProgress(10 + ((i + 1) / fotos.length) * 40); // Up to 50%
       }
 
       // 2. Gerar PDF
-      const pdfBlob = await gerarPDF(fotosUrls);
+      setActiveStep("Gerando layout do PDF...");
+      setProgress(60);
+      const pdfBlob = await gerarPDF(optimizedFotosUrls);
       const pdfFileName = `entrega-${formData.placa}-${Date.now()}.pdf`;
 
       // 3. Upload do PDF
+      setActiveStep("Salvando relatório...");
+      setProgress(85);
       const { error: pdfError } = await supabase.storage
         .from("entregas-pdf")
         .upload(pdfFileName, pdfBlob, { contentType: "application/pdf" });
@@ -397,6 +270,8 @@ const NovaEntrega = () => {
       });
     } finally {
       setLoading(false);
+      setActiveStep("");
+      setProgress(0);
     }
   };
 
@@ -439,9 +314,17 @@ const NovaEntrega = () => {
     }
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (resultado) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-md space-y-6 animate-fade-in text-center">
           <div className="w-20 h-20 mx-auto bg-success/20 rounded-full flex items-center justify-center">
             <svg
@@ -529,9 +412,9 @@ const NovaEntrega = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-[100dvh] bg-background pb-8">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-border bg-card/80 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
           <Button
             variant="ghost"
@@ -723,20 +606,31 @@ const NovaEntrega = () => {
           </div>
 
           {/* Submit */}
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-16 text-lg btn-gold gold-glow"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Gerando relatório...
-              </>
-            ) : (
-              "Gerar Relatório"
+          <div className="space-y-4">
+            {loading && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="flex justify-between text-sm font-medium text-primary">
+                  <span>{activeStep}</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-2 bg-primary/10" />
+              </div>
             )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-16 text-lg btn-gold gold-glow"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                "Gerar Relatório"
+              )}
+            </Button>
+          </div>
         </form>
       </main>
     </div>

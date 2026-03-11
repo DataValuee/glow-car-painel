@@ -10,10 +10,37 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY |
 
 let supabaseClient: SupabaseClient<Database> | null = null;
 
+// Fallback in-memory storage for environments where localStorage fails (e.g., Safari Private Mode)
+const memoryStorage: Record<string, string> = {};
+const resilientStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn("localStorage failed, using memory fallback");
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      memoryStorage[key] = value;
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      delete memoryStorage[key];
+    }
+  },
+};
+
 if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
   supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
-      storage: localStorage,
+      storage: resilientStorage,
       persistSession: true,
       autoRefreshToken: true,
     }
